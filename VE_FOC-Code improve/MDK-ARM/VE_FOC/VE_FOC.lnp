@@ -1,4 +1,4 @@
---cpu Cortex-M4.fp
+--cpu=Cortex-M4.fp
 "ve_foc\startup_stm32f407xx.o"
 "ve_foc\main.o"
 "ve_foc\gpio.o"
@@ -40,6 +40,6 @@
 "ve_foc\lwbtn_opts_use.o"
 "../Middlewares/ST/ARM/DSP/Lib/arm_cortexM4lf_math.lib"
 --library_type=microlib --strict --scatter "VE_FOC\VE_FOC.sct"
---summary_stderr --info summarysizes --map --xref --callgraph --symbols
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers
 --list "VE_FOC.map" -o VE_FOC\VE_FOC.axf

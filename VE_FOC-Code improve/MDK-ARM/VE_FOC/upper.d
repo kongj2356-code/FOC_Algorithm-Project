@@ -1,7 +1,7 @@
 ve_foc\upper.o: Hardware\Upper.c
 ve_foc\upper.o: Hardware\Upper.h
 ve_foc\upper.o: Hardware\header.h
-ve_foc\upper.o: C:\Users\hp\Desktop\VE_FOC-Code improve\MDK-ARM\RTE\RTE_Components.h
+ve_foc\upper.o: .\RTE\_VE_FOC\RTE_Components.h
 ve_foc\upper.o: ../Core/Inc/main.h
 ve_foc\upper.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
 ve_foc\upper.o: ../Core/Inc/stm32f4xx_hal_conf.h
@@ -10,7 +10,7 @@ ve_foc\upper.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h
 ve_foc\upper.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h
 ve_foc\upper.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h
 ve_foc\upper.o: ../Drivers/CMSIS/Include/core_cm4.h
-ve_foc\upper.o: E:\keil5\ARM\ARMCC\Bin\..\include\stdint.h
+ve_foc\upper.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 ve_foc\upper.o: ../Drivers/CMSIS/Include/cmsis_version.h
 ve_foc\upper.o: ../Drivers/CMSIS/Include/cmsis_compiler.h
 ve_foc\upper.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
@@ -18,7 +18,7 @@ ve_foc\upper.o: ../Drivers/CMSIS/Include/mpu_armv7.h
 ve_foc\upper.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h
 ve_foc\upper.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
 ve_foc\upper.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h
-ve_foc\upper.o: E:\keil5\ARM\ARMCC\Bin\..\include\stddef.h
+ve_foc\upper.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 ve_foc\upper.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc_ex.h
 ve_foc\upper.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h
 ve_foc\upper.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio_ex.h
@@ -38,19 +38,19 @@ ve_foc\upper.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h
 ve_foc\upper.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
 ve_foc\upper.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 ve_foc\upper.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
-ve_foc\upper.o: E:\keil5\ARM\ARMCC\Bin\..\include\stdio.h
-ve_foc\upper.o: E:\keil5\ARM\ARMCC\Bin\..\include\stdlib.h
+ve_foc\upper.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+ve_foc\upper.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 ve_foc\upper.o: ../Core/Inc/gpio.h
-ve_foc\upper.o: E:\keil5\ARM\ARMCC\Bin\..\include\math.h
+ve_foc\upper.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 ve_foc\upper.o: ../Core/Inc/adc.h
 ve_foc\upper.o: ../Core/Inc/usart.h
 ve_foc\upper.o: ../Core/Inc/tim.h
 ve_foc\upper.o: ../Core/Inc/spi.h
 ve_foc\upper.o: ../Core/Inc/dma.h
 ve_foc\upper.o: ../Middlewares/ST/ARM/DSP/Inc/arm_math.h
-ve_foc\upper.o: E:\keil5\ARM\ARMCC\Bin\..\include\string.h
-ve_foc\upper.o: E:\keil5\ARM\ARMCC\Bin\..\include\float.h
-ve_foc\upper.o: E:\keil5\ARM\ARMCC\Bin\..\include\limits.h
+ve_foc\upper.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+ve_foc\upper.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\float.h
+ve_foc\upper.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\limits.h
 ve_foc\upper.o: ./software/lwbtn.h
 ve_foc\upper.o: ./software/lwbtn_opt.h
 ve_foc\upper.o: ./software/lwbtn_opts.h

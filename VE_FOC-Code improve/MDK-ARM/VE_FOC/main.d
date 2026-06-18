@@ -7,7 +7,7 @@ ve_foc\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h
 ve_foc\main.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h
 ve_foc\main.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f407xx.h
 ve_foc\main.o: ../Drivers/CMSIS/Include/core_cm4.h
-ve_foc\main.o: E:\keil5\ARM\ARMCC\Bin\..\include\stdint.h
+ve_foc\main.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 ve_foc\main.o: ../Drivers/CMSIS/Include/cmsis_version.h
 ve_foc\main.o: ../Drivers/CMSIS/Include/cmsis_compiler.h
 ve_foc\main.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
@@ -15,7 +15,7 @@ ve_foc\main.o: ../Drivers/CMSIS/Include/mpu_armv7.h
 ve_foc\main.o: ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h
 ve_foc\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h
 ve_foc\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h
-ve_foc\main.o: E:\keil5\ARM\ARMCC\Bin\..\include\stddef.h
+ve_foc\main.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stddef.h
 ve_foc\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc_ex.h
 ve_foc\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h
 ve_foc\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio_ex.h
@@ -42,14 +42,14 @@ ve_foc\main.o: ../Core/Inc/tim.h
 ve_foc\main.o: ../Core/Inc/usart.h
 ve_foc\main.o: ../Core/Inc/gpio.h
 ve_foc\main.o: ./Hardware/header.h
-ve_foc\main.o: C:\Users\hp\Desktop\VE_FOC-Code improve\MDK-ARM\RTE\RTE_Components.h
-ve_foc\main.o: E:\keil5\ARM\ARMCC\Bin\..\include\stdio.h
-ve_foc\main.o: E:\keil5\ARM\ARMCC\Bin\..\include\stdlib.h
-ve_foc\main.o: E:\keil5\ARM\ARMCC\Bin\..\include\math.h
+ve_foc\main.o: .\RTE\_VE_FOC\RTE_Components.h
+ve_foc\main.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+ve_foc\main.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+ve_foc\main.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 ve_foc\main.o: ../Middlewares/ST/ARM/DSP/Inc/arm_math.h
-ve_foc\main.o: E:\keil5\ARM\ARMCC\Bin\..\include\string.h
-ve_foc\main.o: E:\keil5\ARM\ARMCC\Bin\..\include\float.h
-ve_foc\main.o: E:\keil5\ARM\ARMCC\Bin\..\include\limits.h
+ve_foc\main.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+ve_foc\main.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\float.h
+ve_foc\main.o: F:\Keil_v5\ARM\ARMCC\Bin\..\include\limits.h
 ve_foc\main.o: ./software/lwbtn.h
 ve_foc\main.o: ./software/lwbtn_opt.h
 ve_foc\main.o: ./software/lwbtn_opts.h

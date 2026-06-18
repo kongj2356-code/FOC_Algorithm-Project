@@ -158,7 +158,6 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size)
 
 
 
-
 /**
   * @brief  串口错误回调函数
   * @note   出错时重新开启接收
@@ -175,6 +174,15 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef * huart)
 
 
 
+
+
+/*
+ * 三相载波频率TIM1 = 168000000/(0+1)/(3499+1)/2 = 24K
+ * RCR: 中央对齐模式下，Update事件发生在 计数到 ARR 顶点，计数到 0 底点
+        故不加RCR,Update的请求频率Fupdate_raw = 2 × Fpwm = 2 × 24 kHz = 48 kHz
+        RCR = 7: 每 RCR + 1 = 8 次更新请求，才真正产生一次 Update Event，Fupdate = 48 kHz / 8 = 6 kHz
+   DeadTime = 5 * 1/168000000（定时器时钟周期） = 2.76ns
+*/
 
 //6k的中断频率,ADC注入组转换完成中断实现
 //这个ADC的采样实际上是定时器1的更新中断触发的,直接就是硬件触发ADC采样,现在的波形很漂亮,再加上一阶低通滤波器

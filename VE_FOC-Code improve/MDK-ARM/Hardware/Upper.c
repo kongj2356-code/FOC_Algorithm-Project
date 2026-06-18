@@ -15,12 +15,12 @@
 
 
 /* 串口DMA发送缓冲区大小 */
-#define UART_TX_BUFFER_SIZE 1024
+#define UART_TX_BUFFER_SIZE 1024           // 1024Byte
 
 
 
 /**
- * @brief 串口DMA环形发送缓冲区结构体 // 循环队列 head 队尾写入数据，tail 队头取出数据FIFO
+ * @brief 串口DMA环形发送缓冲区结构体        // 循环队列 head 队尾写入数据，tail 队头取出数据FIFO
  * buffer：数据缓存区
  * head：写指针（新数据放入的位置）
  * tail：读指针（DMA发送的位置）
@@ -28,10 +28,11 @@
  */
 typedef struct{
     uint8_t buffer[UART_TX_BUFFER_SIZE];
-    volatile uint32_t head;
-    volatile uint32_t tail;
-    volatile uint8_t dma_busy;
+    volatile uint32_t head;           // 4字节的头
+    volatile uint32_t tail;           // 4字节的尾
+    volatile uint8_t dma_busy;       
 } uart_tx_buffer_t;
+
 uart_tx_buffer_t uart_tx_buf;
 
 
@@ -188,8 +189,8 @@ void Send_array(unsigned char* byte, uint8_t Number)
 
 
 
-/* ================================================== 软件I2C驱动（AS5600专用）================================================== */
-// GPIO定义 - 根据您的配置修改
+/* ================================================== 软件I2C驱动（AS5600磁编码器）================================================== */
+// GPIO定义
 #define SW_I2C_SCL_PIN    GPIO_PIN_8
 #define SW_I2C_SCL_PORT   GPIOA
 #define SW_I2C_SDA_PIN    GPIO_PIN_9
