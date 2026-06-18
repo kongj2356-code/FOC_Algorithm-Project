@@ -1,0 +1,69 @@
+#include "Control.h"
+//Uq
+//120对应着的是
+PID_STRUCT Cur_Uq = {
+	.Ref = 0,
+	.Kp = 0, 		   //
+	.Ki = 0.000001,
+	.Kd = 0,
+	.ErrsumMax = 7.2,
+	.ErrsumMin = 0,
+	.OutMax = 7.2,
+	.OutMin = 0
+};
+
+//Ud
+PID_STRUCT Cur_Ud = {
+	.Ref = 2,
+	.Kp = 0.005,
+	.Ki = 0,
+	.Kd = 0,
+	.ErrsumMax = 7.2,
+	.ErrsumMin = 0,
+	.OutMax = 7.2,
+	.OutMin = 0
+};
+
+//先是q再是d
+void PID_C(PID_STRUCT* p,PID_STRUCT* p1,SVPWM_t* p2)
+{
+	//Q轴
+	p->Err = p->Ref - p->Fbk;//计算误差
+	p->Ui += p->Err * p->Ki;//计算无擦累加
+	
+	if(p->Ui > p->ErrsumMax){
+		p->Ui = p->ErrsumMax;
+	}
+	else if(p->Ui < -p->ErrsumMin){
+		p->Ui = -p->ErrsumMin;
+	}
+	p->Out = p->Kp * p->Err + p->Ui;
+	
+	if(p->Out >= p->OutMax){
+	  p->Out = p->OutMax;
+	}
+	if(p->Out <= p->OutMin){
+	  p->Out = p->OutMin;//限制幅值
+	}
+	
+	//D轴
+	p1->Err = p1->Ref - p1->Fbk;
+	
+	if(p1->Out != p1->OutMax && p1->Out != p1->OutMin){
+		p1->Ui = p1->Ui + p1->Err;
+	}
+	
+	p1->Out = p1->Kp * p1->Err + p1->Ki * p1->Ui;
+	
+	p1->ErrLast = p1->Err;
+	if(p1->Out >= p1->OutMax){
+	  p1->Out = p1->OutMax;
+	}
+	if(p1->Out <= p1->OutMin){
+	  p1->Out = p1->OutMin;//限制幅值
+	}
+	
+	p2->Vq = p->Out;
+	p2->Vd = p1->Out;
+	//不用乘上检流电阻是因为参数会自动补上这个误差
+}

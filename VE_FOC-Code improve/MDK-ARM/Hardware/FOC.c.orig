@@ -1,0 +1,289 @@
+#include "FOC.h"
+
+#define MAIN_CLOCK 168000000
+#define PWM_FRE    (1/(svpwm.Tpwm))
+#define Cur_Fre    2000
+
+float SendArray[4];
+
+//这里初始化4个能够发送的数据
+void Sendarray_Init(SVPWM_t* p1,Cal_Cur_t *p2)
+{
+//	SendArray[0] = p1->Vq;
+//	SendArray[1] = p1->Vd;
+//	SendArray[2] = p1->angle;
+
+	SendArray[0] = p1->Ia;
+	SendArray[1] = p1->Ib;
+	SendArray[2] = p1->Ic;
+	
+//	SendArray[0] = p2->DC_bias1;
+//	SendArray[1] = p2->DC_bias2;
+//	SendArray[2] = p1->Ic;
+
+//	SendArray[0] = p2->adc_Value1;
+//	SendArray[1] = p2->adc_Value2;
+//	SendArray[2] = p1->Ic;
+}
+
+//***********--------参数初始化--------*************//
+SVPWM_t svpwm =
+{
+    .Vdc = 12.0f,
+    .pole_pairs = 7,
+    .Ts = 1.0f,
+    .up = 0,
+    .zero_done_flag = 0,
+	.cur_done_flag = 0,
+    .count = 0
+};
+
+Cal_Cur_t Cur_Cal = 
+{
+    .samples = 200,//不能整太大不然会溢出
+};
+
+//电机参数初始化
+Motor_parameter my_motor =
+{
+    .zero_encoder_angle = 0,//零点
+    .wire_inductor = 0.0028f,//2.8mH
+    .Phase_inductor = 0.00086f,//0.86mH
+    .Flux = 0.0035f,
+    .wire_res = 5.1f,
+    .phase_res = 2.55f
+};
+
+void speed_up_down(SVPWM_t* p)
+{
+    p->up++;
+    if(p->up>=10)
+    {
+        p->up=0;
+        target_speed+=0.005;
+        if(target_speed>=50)
+        {
+            target_speed=50;
+        }
+    }
+}
+
+//编码器的零点校准与磁铁偏移校准
+void stop_motor(void)
+{
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 0);
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 0);
+    __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 0);
+}
+
+//加注电压法实现零点位置检测,理论上只需要检测一次就行
+//输入就是结构体指针，也就是p
+//但是调用Mechanical_zero_point_calibration时需要传递 &svpwm也就是真正的结构体的地址
+//传递电机参数结构体与svpwm结构体
+void Mechanical_zero_point_calibration(SVPWM_t* p1, Motor_parameter* p2,AS5600_Data* p3)
+{
+    p1->Vd = 1;//Vd给值,Vq不给值,电角度给零
+    p1->Vq = 0;
+    p1->angle = 0;
+    reverse_park(p1);
+    reverse_clarke(p1);
+    SVPWM_Calculate(p1);//输入就是结构体指针，也就是data，但是调用Mechanical_zero_point_calibration
+    HAL_Delay(2000);
+    //取平均值得到
+    float sum;
+    for(int i=0; i<100; i++)
+    {
+        p1->angle = AS5600_Get_Angle_Degrees();
+        sum += p1->angle;
+    }
+    p2->zero_encoder_angle = sum/100.0f;
+    HAL_Delay(500);
+}
+
+//点操作符(.)来访问成员,而结构体指针则使用箭头操作符(->),这里传递的是指针,所以使用->进行访问
+//这里需要在中断中进行校准，要放到中断中
+void Current_bias_voltage_calibration(Cal_Cur_t* p)
+{
+    for(int i=0; i<p->samples; i++)
+    {
+        p->adc_Value1 = HAL_ADCEx_InjectedGetValue(&hadc1,ADC_INJECTED_RANK_1);
+        p->adc_Value2 = HAL_ADCEx_InjectedGetValue(&hadc2,ADC_INJECTED_RANK_1);
+        p->sum1 += p->adc_Value1;
+        p->sum2 += p->adc_Value2;
+		Sendarray_Init(&svpwm,&Cur_Cal);
+		Float_send(SendArray,3);
+    }
+    p->Vol_bias1 = p->sum1/p->samples;
+    p->Vol_bias2 = p->sum2/p->samples;
+    p->DC_bias1 = (p->Vol_bias1 * 3.3)/4096;
+    p->DC_bias2 = (p->Vol_bias2 * 3.3)/4096;
+    p->DC_bias3 = (p->DC_bias1 + p->DC_bias2)/2;
+	
+	svpwm.cur_done_flag = 1;//标志电流校准完成
+}
+
+//定时器周期计算
+//获取高级定时器周期
+void calculate_period(SVPWM_t *p)
+{
+    uint32_t psc_value = TIM1->PSC+1;
+    uint32_t arr_value=  TIM1->ARR;
+    p->Tpwm = 2.0F/(MAIN_CLOCK/(psc_value*arr_value));
+    //中心对齐模式实际上有两个周期
+}
+
+//fast_cos(60) = 0.5,fast_cos(30)=SQRT3/2
+//得到Ialpha Ibeta
+void clarke(SVPWM_t *p)
+{
+    p->Ialpha = (p->Ia);
+    p->Ibeta = (2*(p->Ib)+(p->Ia))/SQRT3;
+}
+//要注意顺序，先给Uq，再给Ud
+void park(SVPWM_t *p,PID_STRUCT* p1,PID_STRUCT* p2)//得到Id,Iq
+{
+    p1->Fbk = p->Iq = -(p->Ialpha) * fast_sin(p->angle) + p->Ibeta*fast_cos(p->angle);
+    p2->Fbk = p->Id = p->Ialpha * fast_cos(p->angle) + p->Ibeta*fast_sin(p->angle);
+}
+
+//输入是机械角度，但是要换成电角度进行计算
+//park变换计算出来的Valpha,Vbeta就是用电角度计算出来的Valpha,Vbeta
+void reverse_park(SVPWM_t *p)
+{
+    float electriangle = p->angle * p->pole_pairs;
+    p->Valpha = fast_cos(electriangle)* p->Vd - fast_sin(electriangle) * p->Vq;
+    p->Vbeta = fast_cos(electriangle)* p->Vq + fast_sin(electriangle) * p->Vd;
+}
+
+void reverse_clarke(SVPWM_t *p)
+{
+    p->Va = p->Vbeta;
+    p->Vb = (SQRT3*p->Valpha - p->Vbeta)/2.0F;
+    p->Vc = -(SQRT3*p->Valpha + p->Vbeta)/2.0F;
+}
+
+void SVPWM_Calculate(SVPWM_t *p)
+{
+    calculate_period(p);
+    float T1,T2;//这是中间的计算变量
+    p->sector = 0.0F;
+    p->Tcomp1 = 0.0F;
+    p->Tcomp2 = 0.0F;
+    p->Tcomp3 = 0.0F;
+
+    if(p->Va> 0.0F)
+    {
+        p->sector = 1;
+    }
+    if(p->Vb>0.0F)
+    {
+        p->sector += 2;
+    }
+    if(p->Vc>0.0F)
+    {
+        p->sector += 4;
+    }
+
+    /*差之毫厘,失之千里,这里不正确
+    X = SQRT3*Vbeta*(Tpwm/Vdc);
+    Y = (Tpwm/Vdc)*((3/2)*Valpha + SQRT3_Half*Vbeta);
+    Z = (Tpwm/Vdc)*((-3/2)*Valpha + SQRT3_Half*Vbeta);
+    */
+    p->X = SQRT3*p->Vbeta*(p->Ts/p->Vdc);
+    p->Y = (p->Ts/p->Vdc)*(3*p->Valpha + SQRT3*p->Vbeta)/2;
+    p->Z = (p->Ts/p->Vdc)*(-3*p->Valpha + SQRT3*p->Vbeta)/2;
+
+    switch (p->sector)
+    {
+    case 1:
+        T1 =  p->Z;
+        T2 =  p->Y;
+        break;
+    case 2:
+        T1 = p->Y;
+        T2 = -p->X;
+        break;
+    case 3:
+        T1 = -p->Z;
+        T2 = p->X;
+        break;
+    case 4:
+        T1 = -p->X;
+        T2 = p->Z;
+        break;
+    case 5:
+        T1 = p->X;
+        T2 = -p->Y;
+        break;
+    case 6:
+        T1 = -p->Y;
+        T2 = -p->Z;
+        break;
+    default:
+        break;
+    }
+    //过调制处理
+    if (T1 + T2 > p->Ts)
+    {
+        T1 = T1/(T1 + T2);
+        T2 = T2/(T1 + T2);
+    }
+    else
+    {
+        T1=T1;
+        T2=T2;
+    }
+    //计算Ta,Tb,Tc
+    p->Ta = 0.5f * (p->Ts - T1 - T2);
+    p->Tb = p->Ta + T1;
+    p->Tc = p->Tb + T2;
+    //这个是可以的
+    /*
+    Ta = (Ts - (T1 + T2))/4.0F;
+    Tb =Ta+(T1 / 2.0F);
+    Tc =Tb+(T2 / 2.0F);//这个是袁雷书上的代码,但是出来得波形幅值会减半
+    */
+    switch (p->sector)
+    {
+    case 1:
+        p->Tcomp1 = p->Tb;
+        p->Tcomp2 = p->Ta;
+        p->Tcomp3 = p->Tc;
+        break;
+    case 2:
+        p->Tcomp1 = p->Ta;
+        p->Tcomp2 = p->Tc;
+        p->Tcomp3 = p->Tb;
+        break;
+    case 3:
+        p->Tcomp1 = p->Ta;
+        p->Tcomp2 = p->Tb;
+        p->Tcomp3 = p->Tc;
+        break;
+    case 4:
+        p->Tcomp1 = p->Tc;
+        p->Tcomp2 = p->Tb;
+        p->Tcomp3 = p->Ta;
+        break;
+    case 5:
+        p->Tcomp1 = p->Tc;
+        p->Tcomp2 = p->Ta;
+        p->Tcomp3 = p->Tb;
+        break;
+    case 6:
+        p->Tcomp1 = p->Tb;
+        p->Tcomp2 = p->Tc;
+        p->Tcomp3 = p->Ta;
+        break;
+    }
+    //Tcpm1,Tcpm2,Tcpm3就已经是占空比了所以直接乘上ARR就行
+    //占空比计算
+
+    p->Tcomp1 = p->Tcomp1*(TIM1->ARR);
+    p->Tcomp2 = p->Tcomp2*(TIM1->ARR);
+    p->Tcomp3 = p->Tcomp3*(TIM1->ARR);
+
+    __HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_1,p->Tcomp1);
+    __HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_2,p->Tcomp2);
+    __HAL_TIM_SET_COMPARE(&htim1,TIM_CHANNEL_3,p->Tcomp3);
+}

@@ -1,0 +1,98 @@
+#include "header.h"
+#include "Upper.h"
+#include "FOC.h"
+
+#define ADC_TO_VOLTAGE  (3.3f/4096.0f)
+uint32_t counting = 0;
+float target_speed = 1;
+
+LOWPASSFILTER_STRUCT LP_filter =
+{
+    .Ts = 0.00017,       //采样周期(s)
+    .Fc = 6000,        //截至频率(hz)
+    .Alpha = 0.1,     //滤波系数
+};
+
+//使用编码器读取到的角度
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if(htim->Instance == TIM7)
+    {
+		HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_15);
+		//svpwm.elec_angle += 0.6*target_speed;//电角度自增
+		Get_angle();
+		svpwm.elec_angle = _normalizeAngle(svpwm.elec_angle);//角度归一化
+		svpwm.Vq = 2;
+        svpwm.Vd = 0;
+		
+        reverse_park(&svpwm);
+        reverse_clarke(&svpwm);
+        SVPWM_Calculate(&svpwm);
+		Sendarray_Init(&svpwm, &Cur_Cal);
+		Float_send(SendArray,3);
+    }
+}
+
+//4k的中断频率 ， ADC注入组转换完成中断实现
+//这个ADC的采样实际上是定时器1的更新中断触发的，直接就是硬件触发ADC采样，现在的波形很漂亮，再加上一阶低通滤波器
+void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_15);//这里是3k所以实际上是6k的中断
+    svpwm.count++;
+    //如果电流校准还未完成
+    if(!svpwm.cur_done_flag)
+    {
+        stop_motor();
+        if(svpwm.count<Cur_Cal.samples)
+        {
+            Cur_Cal.adc_Value1 = HAL_ADCEx_InjectedGetValue(&hadc1,ADC_INJECTED_RANK_1);
+            Cur_Cal.adc_Value2 = HAL_ADCEx_InjectedGetValue(&hadc2,ADC_INJECTED_RANK_1);
+			
+            Cur_Cal.adc_Value1 += 9.05;
+            Cur_Cal.adc_Value2 += 9.05;//软件校准
+
+            Cur_Cal.sum1 += Cur_Cal.adc_Value1;
+            Cur_Cal.sum2 += Cur_Cal.adc_Value2;
+        }
+        else
+        {
+            Cur_Cal.sum1 *= ADC_TO_VOLTAGE;
+            Cur_Cal.sum2 *= ADC_TO_VOLTAGE;
+            Cur_Cal.DC_bias1 = Cur_Cal.sum1*1.0f/Cur_Cal.samples*1.0f;
+            Cur_Cal.DC_bias2 = Cur_Cal.sum2*1.0f/Cur_Cal.samples*1.0f;
+            svpwm.cur_done_flag = 1;
+            //是否开启角度自增
+            //HAL_TIM_Base_Start_IT(&htim7);//要在校准完成之后再进行开始自增，否则电流校准会有问题
+        }
+    }
+    if(svpwm.cur_done_flag)//电流校准完成之后
+    {
+        svpwm.ad1 = HAL_ADCEx_InjectedGetValue(&hadc1,ADC_INJECTED_RANK_1);
+        svpwm.ad2 = HAL_ADCEx_InjectedGetValue(&hadc2,ADC_INJECTED_RANK_1);
+
+        Get_angle();
+		
+        svpwm.elec_angle = _normalizeAngle(svpwm.elec_angle);//角度归一化
+		
+        svpwm.AD_A = svpwm.ad1 * ADC_TO_VOLTAGE*1.0f;
+        svpwm.AD_B = svpwm.ad2 * ADC_TO_VOLTAGE*1.0f;
+        svpwm.Ia = 100*(svpwm.AD_A - Cur_Cal.DC_bias1)/12;
+        svpwm.Ib = 100*(svpwm.AD_B - Cur_Cal.DC_bias2)/12;
+        svpwm.Ic = 0 - svpwm.Ia - svpwm.Ib;
+		
+        LP_IaIbIc(&LP_filter, &svpwm);
+		
+        clarke(&svpwm);//clarke变换已验证
+        park(&svpwm, &Cur_Uq, &Cur_Ud);//clarke变换已验证
+        PID_C(&Cur_Uq, &Cur_Ud, &svpwm);
+        reverse_park(&svpwm);
+        reverse_clarke(&svpwm);
+        SVPWM_Calculate(&svpwm);
+		
+        Sendarray_Init(&svpwm, &Cur_Cal);
+			SendArray[0] = Cur_Ud.Err;	  //验证park变换
+	SendArray[1] = Cur_Ud.Ui;
+	SendArray[2] = svpwm.Vd;
+        Float_send(SendArray,3);
+    }
+}

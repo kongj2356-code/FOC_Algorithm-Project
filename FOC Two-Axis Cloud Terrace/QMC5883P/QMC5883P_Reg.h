@@ -1,0 +1,18 @@
+#ifndef __QMC5883P_REG_H
+#define __QMC5883P_REG_H
+
+#define	QMC5883P_REG_CHIPID		0x00
+
+#define	QMC5883P_REG_XOUT_L	    0x01
+#define	QMC5883P_REG_XOUT_H	    0x02
+#define	QMC5883P_REG_YOUT_L	    0x03
+#define	QMC5883P_REG_YOUT_H	    0x04
+#define	QMC5883P_REG_ZOUT_L	    0x05
+#define	QMC5883P_REG_ZOUT_H	    0x06
+
+#define	QMC5883P_REG_STATUS 	0x09
+
+#define	QMC5883P_REG_CONTROL1	0x0A
+#define	QMC5883P_REG_CONTROL2	0x0B
+
+#endif

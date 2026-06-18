@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "header.h": "c",
+        "common.h": "c",
+        "foc_bank.h": "c",
+        "foc.h": "c",
+        "algorithm": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
+}
