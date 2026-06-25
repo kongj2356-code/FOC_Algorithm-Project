@@ -1,0 +1,10 @@
+led\arm_common_tables.o: ..\Drivers\CMSIS\DSP\Source\CommonTables\arm_common_tables.c
+led\arm_common_tables.o: E:\keil\ARM\PACK\ARM\CMSIS\4.2.0\CMSIS\Include\arm_math.h
+led\arm_common_tables.o: E:\keil\ARM\PACK\ARM\CMSIS\4.2.0\CMSIS\Include\core_cm4.h
+led\arm_common_tables.o: E:\keil\ARM\ARMCC\Bin\..\include\stdint.h
+led\arm_common_tables.o: E:\keil\ARM\PACK\ARM\CMSIS\4.2.0\CMSIS\Include\core_cmInstr.h
+led\arm_common_tables.o: E:\keil\ARM\PACK\ARM\CMSIS\4.2.0\CMSIS\Include\core_cmFunc.h
+led\arm_common_tables.o: E:\keil\ARM\PACK\ARM\CMSIS\4.2.0\CMSIS\Include\core_cmSimd.h
+led\arm_common_tables.o: E:\keil\ARM\ARMCC\Bin\..\include\string.h
+led\arm_common_tables.o: E:\keil\ARM\ARMCC\Bin\..\include\math.h
+led\arm_common_tables.o: E:\keil\ARM\PACK\ARM\CMSIS\4.2.0\CMSIS\Include\arm_common_tables.h
