@@ -1,3 +1,6 @@
 version https://git-lfs.github.com/spec/v1
 oid sha256:8bfbde4468ccb40492033b4069e7c0404f8125c51715ba7345f612558deb45dc
 size 165418238
+
+// 2026/10/29/16:55
+Please note that the current sampling driver board used for sampling employs a sampling resistor of 5 mΩ.
